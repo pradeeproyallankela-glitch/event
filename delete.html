@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delete Event | College Event Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar"><div class="nav-inner">
+  <a class="brand" href="index.html"><span class="logo">&#127891;</span>CampusEvents</a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="list.html">List Events</a></li><li><a href="listOne.html">Search Event</a></li><li><a href="insert.html">Add Event</a></li><li><a href="update.html">Update Event</a></li><li><a href="delete.html" class="active">Delete Event</a></li></ul>
+</div></nav>
+
+<header class="hero small" data-img="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1800&q=70">
+  <span class="tag">Remove</span>
+  <h1>Delete Event</h1>
+  <p>Permanently remove an event from the database.</p>
+</header>
+
+<main>
+<div class="card narrow">
+  <h2>Delete an event</h2><p class="sub">Enter the Event ID, review the event, then confirm deletion.</p>
+  <div class="field"><label for="eid">Event ID</label>
+    <div class="row"><input type="number" id="eid" min="1" placeholder="e.g. 101">
+    <button class="btn btn-dark" onclick="preview()">Preview</button></div></div>
+    <div class="detail danger" id="detail">
+      <div class="head"><h3 id="d-name"></h3><span class="badge" id="d-venue"></span></div>
+      <dl>
+        <div><dt>Event ID</dt><dd id="d-id"></dd></div>
+        <div><dt>Event Date</dt><dd id="d-date"></dd></div>
+        <div><dt>Event Time</dt><dd id="d-time"></dd></div>
+        <div><dt>Venue Type</dt><dd id="d-venue2"></dd></div>
+      </dl>
+      <p class="d-desc" id="d-desc"></p>
+    </div>
+  <div class="actions">
+    <button class="btn btn-danger" onclick="deleteEvent()">Delete Event</button>
+    <a class="btn btn-ghost" href="index.html">Home Page</a>
+  </div>
+</div>
+</main>
+
+<footer>&copy; 2026 <b>CampusEvents</b> &mdash; College Event Management System
+<div class="photo-credit">Photos: Unsplash (free to use)</div></footer>
+
+<script src="js/app.js"></script>
+<script>
+function showDetail(e){
+  document.getElementById("d-name").textContent = e.event_name;
+  document.getElementById("d-venue").textContent = e.venue_type;
+  document.getElementById("d-id").textContent = e.event_id;
+  document.getElementById("d-date").textContent = fmtDate(e.event_date);
+  document.getElementById("d-time").textContent = fmtTime(e.event_time);
+  document.getElementById("d-venue2").textContent = e.venue_type;
+  document.getElementById("d-desc").textContent = e.description || "No description provided.";
+  document.getElementById("detail").classList.add("show");
+}
+function preview(){
+  const id = document.getElementById("eid").value.trim();
+  if(!id){ toast("Please enter an Event ID", "err"); return; }
+  fetch("/events/" + encodeURIComponent(id))
+  .then(r => r.ok ? r.json() : r.text().then(m => {throw new Error(m)}))
+  .then(data => {
+    if(data.length == 0){ document.getElementById("detail").classList.remove("show"); toast("Event Not Found", "err"); return; }
+    showDetail(data[0]);
+  }).catch(e => toast(e.message, "err"));
+}
+function deleteEvent(){
+  const id = document.getElementById("eid").value.trim();
+  if(!id){ toast("Please enter an Event ID", "err"); return; }
+  if(!confirm("Are you sure you want to delete event " + id + "?")) return;
+  fetch("/events/" + encodeURIComponent(id), { method:"DELETE" })
+  .then(check)
+  .then(msg => { toast(msg, "ok"); setTimeout(() => location.href = "list.html", 1100); })
+  .catch(e => toast(e.message, "err"));
+}
+</script>
+</body>
+</html>

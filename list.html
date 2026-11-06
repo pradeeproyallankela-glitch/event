@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List Events | College Event Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar"><div class="nav-inner">
+  <a class="brand" href="index.html"><span class="logo">&#127891;</span>CampusEvents</a>
+  <ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="list.html" class="active">List Events</a></li><li><a href="listOne.html">Search Event</a></li><li><a href="insert.html">Add Event</a></li><li><a href="update.html">Update Event</a></li><li><a href="delete.html">Delete Event</a></li></ul>
+</div></nav>
+
+<header class="hero small" data-img="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1800&q=70">
+  <span class="tag">All Events</span>
+  <h1>List of Events</h1>
+  <p>Every event scheduled across the campus.</p>
+</header>
+
+<main>
+<div class="card">
+  <div class="toolbar">
+    <input type="search" id="filter" placeholder="&#128269; Filter by name or venue...">
+    <div><button class="btn btn-dark" onclick="loadEvents()">&#8635; Refresh List</button>
+         <a class="btn btn-primary" href="insert.html">+ Add Event</a></div>
+  </div>
+  <div class="table-wrap"><table id="eventTable">
+    <thead><tr><th>Event ID</th><th>Event Name</th><th>Event Date</th><th>Event Time</th><th>Venue Type</th><th>Description</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table></div>
+  <div class="actions"><a class="btn btn-ghost" href="index.html">&larr; Home Page</a></div>
+</div>
+</main>
+
+<footer>&copy; 2026 <b>CampusEvents</b> &mdash; College Event Management System
+<div class="photo-credit">Photos: Unsplash (free to use)</div></footer>
+
+<script src="js/app.js"></script>
+<script>
+let all = [];
+loadEvents();
+function loadEvents(){
+  fetch("/events").then(r => r.ok ? r.json() : r.text().then(m => {throw new Error(m)}))
+  .then(data => { all = data; render(); })
+  .catch(e => toast(e.message, "err"));
+}
+function render(){
+  const q = document.getElementById("filter").value.toLowerCase();
+  const rows = all.filter(e => (e.event_name + " " + e.venue_type).toLowerCase().includes(q));
+  document.getElementById("tbody").innerHTML = rows.length ? rows.map(e => `
+    <tr>
+      <td><b>${esc(e.event_id)}</b></td>
+      <td>${esc(e.event_name)}</td>
+      <td>${fmtDate(e.event_date)}</td>
+      <td>${fmtTime(e.event_time)}</td>
+      <td><span class="badge">${esc(e.venue_type)}</span></td>
+      <td class="desc">${esc(e.description) || "&mdash;"}</td>
+    </tr>`).join("") : '<tr><td colspan="6" class="empty">No events found.</td></tr>';
+}
+document.getElementById("filter").addEventListener("input", render);
+</script>
+</body>
+</html>
